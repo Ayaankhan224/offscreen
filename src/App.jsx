@@ -1,10 +1,12 @@
 import React from 'react'
 import Navbar from './Navbar'
+import Hero from './Hero'
 
 const App = () => {
   return (
-    <div className='h-screen w-screen flex-col'>
+    <div className='flex h-screen w-screen flex-col overflow-hidden'>
       <Navbar />
+      <Hero />
     </div>
   )
 }
