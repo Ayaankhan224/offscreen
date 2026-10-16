@@ -1,18 +1,6 @@
-# Fable
+# React + Vite
 
-This project is a simple React + Vite starter designed to be easy to edit and understand.
-
-## Where to start
-
-- `src/main.jsx` bootstraps the app
-- `src/App.jsx` contains the layout and component structure
-- `src/index.css` holds shared global styles
-
-## Making changes
-
-- Update the array data at the top of `src/App.jsx` to change content quickly.
-- Keep new UI pieces small and reusable instead of putting everything in one large component.
-- Add comments when a section is not obvious, especially for business logic or layout blocks.
+This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
 Currently, two official plugins are available:
 
