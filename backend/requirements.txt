@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+pydantic-settings
+pymongo
+pandas
+numpy
+scipy
+scikit-learn
+joblib
+python-dotenv
+email-validator

@@ -6,7 +6,7 @@ const Navbar = () => {
       <div className='h-full w-[13%] flex items-center'>
         <img src="/assets/logo.png" alt="Fable logo" className='h-[6rem] w-auto object-contain' />
       </div>
-      <h1 className='h-full w-[37%] flex items-center text-[6rem]'>FABLE</h1>
+      <h1 className='h-full w-[37%] flex items-center text-[6rem]'>SCREEN</h1>
       <div className='h-full w-[50%] flex justify-end gap-9 '>
         <div className='w-fit h-7 flex justify-center items-center underline-slide'>ABOUT</div>
         <div className='w-fit h-7 flex justify-center items-center underline-slide'>SOURCE</div>
