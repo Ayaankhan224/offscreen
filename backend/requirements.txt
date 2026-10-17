@@ -9,3 +9,7 @@ scikit-learn
 joblib
 python-dotenv
 email-validator
+argon2-cffi
+PyJWT
+pytest
+httpx
