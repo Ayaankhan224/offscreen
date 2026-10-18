@@ -13,6 +13,52 @@ body{
   background-color: #000000;
 }
 
+.desktop-only-notice {
+  display: none;
+}
+
+@media (max-width: 1024px), (hover: none) and (pointer: coarse) {
+  .desktop-app {
+    display: none !important;
+  }
+
+  .desktop-only-notice {
+    position: fixed;
+    z-index: 9999;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 2rem;
+    background: #09090b;
+    color: #f4f4f5;
+    text-align: center;
+  }
+
+  .desktop-only-notice__content {
+    width: min(100%, 26rem);
+  }
+
+  .desktop-only-notice__eyebrow {
+    color: #a78bfa;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+  }
+
+  .desktop-only-notice h1 {
+    margin: 1rem 0 0.75rem;
+    font-size: clamp(2rem, 8vw, 3rem);
+    line-height: 1.05;
+  }
+
+  .desktop-only-notice p {
+    margin: 0;
+    color: #a1a1aa;
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+}
+
 .underline-slide {
   position: relative;
   cursor: pointer;
