@@ -40,10 +40,7 @@ const Navbar = () => {
       </div>
 
       <nav className='flex items-center gap-6 sm:gap-9 text-xs sm:text-sm tracking-widest'>
-        <Link to='/about' className='underline-slide py-1 text-zinc-300 hover:text-white transition-colors'>
-          ABOUT
-        </Link>
-        <a href='https://github.com/Ayaankhan224/fable' target='_blank' rel='noopener noreferrer' className='underline-slide py-1 text-zinc-300 hover:text-white transition-colors'>
+        <a href='https://github.com/Ayaankhan224/offscreen' target='_blank' rel='noopener noreferrer' className='underline-slide py-1 text-zinc-300 hover:text-white transition-colors'>
           SOURCE
         </a>
         <Link

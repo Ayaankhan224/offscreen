@@ -4,7 +4,6 @@ from pathlib import Path
 import joblib
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -44,17 +43,11 @@ def build_model():
         movies["content_text"]
     )
 
-    similarity_matrix = cosine_similarity(
-        tfidf_matrix,
-        dense_output=False,
-    )
-
     joblib.dump(
         {
             "movies": movies,
             "vectorizer": vectorizer,
             "tfidf_matrix": tfidf_matrix,
-            "similarity_matrix": similarity_matrix,
         },
         ARTIFACT_DIR / "content_model.joblib",
     )

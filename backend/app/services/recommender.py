@@ -7,6 +7,7 @@ from pathlib import Path
 
 import joblib
 import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -48,7 +49,7 @@ def get_recommendations(title: str, limit: int = 7):
     model = load_model()
 
     movies = model["movies"]
-    similarity_matrix = model["similarity_matrix"]
+    tfidf_matrix = model["tfidf_matrix"]
 
     matches = movies[
         movies["title"].str.casefold() == title.strip().casefold()
@@ -61,7 +62,11 @@ def get_recommendations(title: str, limit: int = 7):
 
     movie_index = matches["rating_count"].idxmax()
 
-    similarity_row = similarity_matrix.getrow(movie_index)
+    similarity_row = cosine_similarity(
+        tfidf_matrix[movie_index],
+        tfidf_matrix,
+        dense_output=False,
+    ).getrow(0)
 
     ranked = sorted(
         zip(similarity_row.indices, similarity_row.data),
@@ -107,7 +112,7 @@ def get_personalized_recommendations(
 ):
     model = load_model()
     movies = model["movies"]
-    similarity_matrix = model["similarity_matrix"]
+    tfidf_matrix = model["tfidf_matrix"]
 
     disliked_titles = disliked_titles or []
     favorite_genres = favorite_genres or []
@@ -179,7 +184,9 @@ def get_personalized_recommendations(
     
     # 1. Similarity to the user's liked movies.
     positive_scores = np.asarray(
-        similarity_matrix[liked_indices].mean(axis=0)
+        cosine_similarity(
+            tfidf_matrix[liked_indices], tfidf_matrix, dense_output=False
+        ).mean(axis=0)
     ).ravel()
 
     # 2. Similarity to movies the user dislikes.
@@ -187,7 +194,11 @@ def get_personalized_recommendations(
 
     if disliked_indices:
         negative_scores = np.asarray(
-            similarity_matrix[disliked_indices].mean(axis=0)
+            cosine_similarity(
+                tfidf_matrix[disliked_indices],
+                tfidf_matrix,
+                dense_output=False,
+            ).mean(axis=0)
         ).ravel()
 
     # 3. Calculate a rating baseline weighted by vote counts.
@@ -280,18 +291,25 @@ def get_personalized_recommendations(
     while candidates and len(recommendations) < limit:
         best_index = None
         best_mmr_score = -np.inf
+        redundancy_scores = None
 
-        for index in candidates:
+        if selected_indices:
+            candidate_matrix = tfidf_matrix[candidates]
+            selected_matrix = tfidf_matrix[selected_indices]
+            redundancy_scores = cosine_similarity(
+                candidate_matrix,
+                selected_matrix,
+                dense_output=True,
+            ).max(axis=1)
+
+        for candidate_position, index in enumerate(candidates):
             relevance = float(scores[index])
 
-            if selected_indices:
-                similarities = similarity_matrix[
-                    index, selected_indices
-                ].toarray().ravel()
-
-                redundancy = float(np.max(similarities))
-            else:
-                redundancy = 0.0
+            redundancy = (
+                float(redundancy_scores[candidate_position])
+                if redundancy_scores is not None
+                else 0.0
+            )
 
             mmr_score = (
                 (1 - diversity_weight) * relevance
