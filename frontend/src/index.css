@@ -2,11 +2,11 @@
 
 @font-face {
   font-family: asul;
-  src: url(assets/font/Asul-Regular.ttf);
+  src: url('/assets/font/Asul-Regular.ttf');
 }
 @font-face {
   font-family: asulBold;
-  src: url(assets/font/Asul-Bold.ttf);
+  src: url('/assets/font/Asul-Bold.ttf');
 }
 
 body{

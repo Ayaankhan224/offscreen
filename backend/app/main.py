@@ -6,9 +6,15 @@ from app.core.auth import get_current_user
 from app.services.recommender import (
     get_recommendations,
     get_personalized_recommendations,
+    get_recommendations_for_user,
+    get_all_genres,
+    get_popular_movies,
+    search_movies,
+    get_movie_details,
 )
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, status
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.models.user_profile import UserProfile
@@ -20,7 +26,13 @@ from app.schemas.auth import (
 )
 from app.schemas.taste import TasteSurvey
 from app.services import auth_service
-from app.services.profile_repository import get_profile, save_profile
+from app.services.profile_repository import (
+    get_profile,
+    save_profile,
+    toggle_watchlist,
+    toggle_watched,
+    add_or_update_review,
+)
 from app.services.survey_service import get_survey_recommendations
 from app.services.user_repository import ensure_user_indexes
 
@@ -36,6 +48,14 @@ app = FastAPI(
     description="Personalized movie discovery and recommendation engine",
     version="0.2.0",
     lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -233,3 +253,130 @@ def update_my_profile(
         discovery_preference=survey.discovery_preference,
     )
     return save_profile(str(current_user["_id"]), profile)
+
+
+class MovieActionRequest(BaseModel):
+    movie_title: str
+
+
+class ReviewRequest(BaseModel):
+    movie_title: str
+    review: str
+    rating: float = 5.0
+
+
+@app.get("/movies/search")
+def api_search_movies(
+    q: str = Query(default="", min_length=1),
+    limit: int = Query(default=10, ge=1, le=50),
+):
+    return search_movies(query=q, limit=limit)
+
+
+@app.get("/movies/popular")
+def api_popular_movies(
+    limit: int = Query(default=30, ge=1, le=100),
+    genre: str | None = None,
+):
+    return get_popular_movies(limit=limit, genre=genre)
+
+
+@app.get("/movies/genres")
+def api_genres():
+    return get_all_genres()
+
+
+@app.get("/recommendations/user")
+def api_user_recommendations(
+    refresh: int = Query(default=0, ge=0),
+    current_user: dict = Depends(get_current_user),
+):
+    recommendations = get_recommendations_for_user(
+        user_id=str(current_user["_id"]),
+        limit=7,
+        refresh_offset=refresh,
+    )
+    profile = get_profile(str(current_user["_id"])) or {}
+    watchlist_set = set(profile.get("watchlist", []))
+    watched_set = set(profile.get("watched_movies", []))
+
+    palette = ["#8b5cf6", "#0ea5e9", "#f43f5e", "#ffffff", "#f59e0b", "#10b981", "#6366f1"]
+    enriched = []
+    for idx, movie in enumerate(recommendations):
+        title = movie["title"]
+        movie_dict = dict(movie)
+        movie_dict["color"] = palette[idx % len(palette)]
+        movie_dict["in_watchlist"] = title in watchlist_set
+        movie_dict["is_watched"] = title in watched_set
+        if not movie_dict.get("summary"):
+            movie_dict["summary"] = (
+                f"{movie_dict.get('genres', 'Drama')} • Rating: {movie_dict.get('average_rating', 4.0)}/5"
+            )
+        enriched.append(movie_dict)
+
+    return {
+        "count": len(enriched),
+        "recommendations": enriched,
+    }
+
+
+@app.post("/users/me/watchlist")
+def api_toggle_watchlist(
+    request: MovieActionRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    return toggle_watchlist(str(current_user["_id"]), request.movie_title)
+
+
+@app.post("/users/me/watched")
+def api_toggle_watched(
+    request: MovieActionRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    return toggle_watched(str(current_user["_id"]), request.movie_title)
+
+
+@app.post("/users/me/reviews")
+def api_add_review(
+    request: ReviewRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    result = add_or_update_review(
+        user_id=str(current_user["_id"]),
+        movie_title=request.movie_title,
+        review_text=request.review,
+        rating=request.rating,
+    )
+    return {"status": "success", "review": result}
+
+
+@app.get("/users/me/library")
+def api_get_library(current_user: dict = Depends(get_current_user)):
+    profile = get_profile(str(current_user["_id"])) or {}
+    watched_titles = profile.get("watched_movies", [])
+    watchlist_titles = profile.get("watchlist", [])
+    reviews = profile.get("reviews", [])
+
+    reviews_by_title = {r["movie_title"]: r for r in reviews if "movie_title" in r}
+
+    watched_enriched = []
+    for title in watched_titles:
+        details = get_movie_details(title) or {"title": title, "genres": "Drama", "average_rating": 4.0}
+        details["is_watched"] = True
+        details["in_watchlist"] = False
+        details["review"] = reviews_by_title.get(title)
+        watched_enriched.append(details)
+
+    watchlist_enriched = []
+    for title in watchlist_titles:
+        details = get_movie_details(title) or {"title": title, "genres": "Drama", "average_rating": 4.0}
+        details["is_watched"] = False
+        details["in_watchlist"] = True
+        watchlist_enriched.append(details)
+
+    return {
+        "watched": watched_enriched,
+        "watchlist": watchlist_enriched,
+        "reviews": reviews,
+    }
+
