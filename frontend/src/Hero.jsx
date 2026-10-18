@@ -1,5 +1,6 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from './context/AuthContext'
 import './Hero.css'
 
 const posters = [
@@ -45,6 +46,19 @@ const posterTitles = [
 ]
 
 const Hero = () => {
+  const { user, hasSurvey } = useAuth()
+  const navigate = useNavigate()
+
+  const handleGetStarted = () => {
+    if (!user) {
+      navigate('/signup?flow=get-started')
+    } else if (!hasSurvey) {
+      navigate('/survey')
+    } else {
+      navigate('/recommender')
+    }
+  }
+
   return (
     <div className='flex min-h-0 w-full flex-1 flex-col items-center'>
       <div className='poster-grid mt-6 grid h-[52%] w-full grid-cols-6 grid-rows-3'>
@@ -68,9 +82,13 @@ const Hero = () => {
           ways we learn that.”
           <span className='text-[1rem]'>-ROBER AGER</span>
         </p>
-        <Link to='/survey' className='w-32 h-7 flex justify-center cursor-pointer items-center bg-zinc-200 border-2 border-zinc-200 text-black rounded-4xl hover:bg-black hover:text-zinc-200'>
+        <button
+          type='button'
+          onClick={handleGetStarted}
+          className='w-36 h-8 flex justify-center cursor-pointer items-center bg-zinc-200 border-2 border-zinc-200 text-black rounded-full hover:bg-black hover:text-zinc-200 text-xs font-semibold tracking-wider transition-colors'
+        >
           GET STARTED
-        </Link>
+        </button>
       </div>
     </div>
   )

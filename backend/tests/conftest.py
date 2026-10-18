@@ -56,6 +56,68 @@ def api(monkeypatch):
         profiles[user_id] = data
         return data
 
+    def mock_toggle_watchlist(user_id: str, movie_title: str) -> dict:
+        profile = profiles.setdefault(user_id, {
+            "user_id": user_id,
+            "favorite_movies": [],
+            "favorite_genres": [],
+            "disliked_genres": [],
+            "disliked_movies": [],
+            "watched_movies": [],
+            "watchlist": [],
+            "reviews": [],
+        })
+        watchlist = profile.setdefault("watchlist", [])
+        if movie_title in watchlist:
+            watchlist.remove(movie_title)
+            in_w = False
+        else:
+            watchlist.append(movie_title)
+            in_w = True
+        return {"movie_title": movie_title, "in_watchlist": in_w}
+
+    def mock_toggle_watched(user_id: str, movie_title: str) -> dict:
+        profile = profiles.setdefault(user_id, {
+            "user_id": user_id,
+            "favorite_movies": [],
+            "favorite_genres": [],
+            "disliked_genres": [],
+            "disliked_movies": [],
+            "watched_movies": [],
+            "watchlist": [],
+            "reviews": [],
+        })
+        watched = profile.setdefault("watched_movies", [])
+        watchlist = profile.setdefault("watchlist", [])
+        if movie_title in watched:
+            watched.remove(movie_title)
+            is_w = False
+        else:
+            watched.append(movie_title)
+            if movie_title in watchlist:
+                watchlist.remove(movie_title)
+            is_w = True
+        return {"movie_title": movie_title, "is_watched": is_w}
+
+    def mock_add_or_update_review(user_id: str, movie_title: str, review_text: str, rating: float = 5.0) -> dict:
+        profile = profiles.setdefault(user_id, {
+            "user_id": user_id,
+            "favorite_movies": [],
+            "favorite_genres": [],
+            "disliked_genres": [],
+            "disliked_movies": [],
+            "watched_movies": [],
+            "watchlist": [],
+            "reviews": [],
+        })
+        reviews = profile.setdefault("reviews", [])
+        watched = profile.setdefault("watched_movies", [])
+        if movie_title not in watched:
+            watched.append(movie_title)
+        rev = {"movie_title": movie_title, "review": review_text, "rating": rating}
+        reviews.append(rev)
+        return rev
+
     monkeypatch.setattr(user_repository, "create_user", create_user)
     monkeypatch.setattr(
         user_repository,
@@ -66,6 +128,14 @@ def api(monkeypatch):
     monkeypatch.setattr(main, "ensure_user_indexes", lambda: None)
     monkeypatch.setattr(main, "get_profile", lambda user_id: profiles.get(user_id))
     monkeypatch.setattr(main, "save_profile", save_profile)
+    monkeypatch.setattr(main, "toggle_watchlist", mock_toggle_watchlist)
+    monkeypatch.setattr(main, "toggle_watched", mock_toggle_watched)
+    monkeypatch.setattr(main, "add_or_update_review", mock_add_or_update_review)
+    monkeypatch.setattr(profile_repository, "get_profile", lambda user_id: profiles.get(user_id))
+    monkeypatch.setattr(profile_repository, "save_profile", save_profile)
+    monkeypatch.setattr(profile_repository, "toggle_watchlist", mock_toggle_watchlist)
+    monkeypatch.setattr(profile_repository, "toggle_watched", mock_toggle_watched)
+    monkeypatch.setattr(profile_repository, "add_or_update_review", mock_add_or_update_review)
     monkeypatch.setattr(survey_service, "save_profile", save_profile)
     monkeypatch.setattr(
         survey_service,
