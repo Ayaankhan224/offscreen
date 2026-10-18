@@ -6,11 +6,11 @@ The API is built with FastAPI. It stores accounts and user profiles in MongoDB a
 
 From this directory, create a virtual environment, install `requirements.txt`, and copy `.env.example` to `.env`. Set `MONGODB_URI` and `JWT_SECRET_KEY` in `.env`.
 
-Build the generated recommendation model before starting the API:
+The compact recommendation model is checked in at `artifacts/content_model.joblib`. To rebuild it after changing the processed catalog, run:
 
 ```bash
 python scripts/build_model.py
 uvicorn app.main:app --reload
 ```
 
-The generated `artifacts/content_model.joblib` is intentionally excluded from Git because it is large. The processed catalog and build script are included in the repository.
+The model stores the TF-IDF matrix and calculates cosine similarities on demand, avoiding a large precomputed movie-to-movie similarity table.
