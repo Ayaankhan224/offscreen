@@ -5,11 +5,11 @@ const Library = () => {
 
   return (
     <div className='h-full w-full'>
-      <div className='w-full h-[8%] flex justify-center'>
-        <div className='relative w-[20%] min-w-64 h-full border-2 border-white rounded-full p-1 text-white flex items-center text-[1.2rem]'>
+      <div className='w-full h-[6%] min-h-9 flex justify-center'>
+        <div className='relative w-56 h-9 border border-white/70 rounded-full p-0.5 text-white flex items-center text-xs tracking-[0.12em]'>
           <span
             aria-hidden='true'
-            className={`absolute top-1 bottom-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-white transition-transform duration-300 ${activeTab === 'watchlist' ? 'translate-x-full' : ''}`}
+            className={`absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-0.125rem)] rounded-full bg-white transition-transform duration-300 ${activeTab === 'watchlist' ? 'translate-x-full' : ''}`}
           />
           <button
             type='button'
