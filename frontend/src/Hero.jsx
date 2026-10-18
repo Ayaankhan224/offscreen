@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import './Hero.css'
 
 const posters = [
@@ -67,9 +68,9 @@ const Hero = () => {
           ways we learn that.”
           <span className='text-[1rem]'>-ROBER AGER</span>
         </p>
-        <button className='w-32 h-7 flex justify-center cursor-pointer items-center bg-zinc-200 border-2 border-zinc-200 text-black rounded-4xl hover:bg-black hover:text-zinc-200'>
+        <Link to='/survey' className='w-32 h-7 flex justify-center cursor-pointer items-center bg-zinc-200 border-2 border-zinc-200 text-black rounded-4xl hover:bg-black hover:text-zinc-200'>
           GET STARTED
-        </button>
+        </Link>
       </div>
     </div>
   )
