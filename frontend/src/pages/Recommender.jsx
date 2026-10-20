@@ -132,60 +132,19 @@ const Recommender = () => {
     poster_url: null,
   }
 
-  // Live poster fetcher for active movie if not already provided
+  // Prefer already-provided poster URLs and otherwise use the app's local poster map.
+  // This avoids browser CORS failures from third-party APIs while preserving the UI.
   useEffect(() => {
     if (!movie || !movie.title || movie.title === 'Discovering...') return
 
-    if (movie.poster_url && movie.poster_url !== 'N/A') {
-      setMoviePosters((prev) => (prev[movie.title] ? prev : { ...prev, [movie.title]: movie.poster_url }))
-      return
-    }
+    const nextPoster = movie.poster_url && movie.poster_url !== 'N/A'
+      ? movie.poster_url
+      : getPosterForMovie(movie, selectedMovie)
 
-    if (moviePosters[movie.title]) return
-
-    let cancelled = false
-    const fetchPoster = async () => {
-      const raw = movie.title.trim()
-      let base = raw.replace(/\(.*?\)/g, '').trim()
-      if (base.includes(', The')) base = 'The ' + base.replace(', The', '').trim()
-      else if (base.includes(', A')) base = 'A ' + base.replace(', A', '').trim()
-      else if (base.includes(', An')) base = 'An ' + base.replace(', An', '').trim()
-
-      const yearMatch = raw.match(/\((\d{4})\)/)
-      const year = yearMatch ? yearMatch[1] : ''
-
-      try {
-        const omdbUrl = year
-          ? `https://www.omdbapi.com/?t=${encodeURIComponent(base)}&y=${year}&apikey=trilogy`
-          : `https://www.omdbapi.com/?t=${encodeURIComponent(base)}&apikey=trilogy`
-        const res = await fetch(omdbUrl)
-        const data = await res.json()
-        if (!cancelled && data.Response === 'True' && data.Poster && data.Poster !== 'N/A') {
-          setMoviePosters((prev) => ({ ...prev, [movie.title]: data.Poster }))
-          return
-        }
-
-        // Search fallback
-        const searchRes = await fetch(
-          `https://www.omdbapi.com/?s=${encodeURIComponent(base)}&apikey=trilogy`
-        )
-        const searchData = await searchRes.json()
-        if (!cancelled && searchData.Search && searchData.Search.length > 0) {
-          const match = searchData.Search.find((s) => s.Poster && s.Poster !== 'N/A')
-          if (match) {
-            setMoviePosters((prev) => ({ ...prev, [movie.title]: match.Poster }))
-          }
-        }
-      } catch (e) {
-        console.warn('Poster fetch error:', e)
-      }
-    }
-
-    fetchPoster()
-    return () => {
-      cancelled = true
-    }
-  }, [movie, moviePosters])
+    setMoviePosters((prev) => (
+      prev[movie.title] === nextPoster ? prev : { ...prev, [movie.title]: nextPoster }
+    ))
+  }, [movie, selectedMovie])
 
   const handleMovieScroll = (event) => {
     if (movies.length === 0 || Math.abs(event.deltaY) < 2) return
