@@ -67,15 +67,15 @@ const Signup = () => {
             className='absolute inset-0 h-full w-full scale-110 object-cover opacity-45 blur-sm'
           />
           <div className='absolute inset-0 bg-black/55' />
-          <div className='relative font-[asul] text-2xl tracking-[0.2em]'></div>
+          <div className='relative font-[asul] text-2xl tracking-[0.2em]'>OFFSCREEN</div>
           <div className='relative max-w-sm'>
-            <p className='mb-4 text-xs uppercase tracking-[0.28em] text-zinc-400'></p>
+            <p className='mb-4 text-xs uppercase tracking-[0.28em] text-zinc-400'>A place for your next favorite</p>
             <h1 className='font-[asul] text-5xl leading-[1.05]'>Find stories that stay with you.</h1>
             <p className='mt-5 max-w-xs text-sm leading-6 text-zinc-400'>
               Keep your watchlist close, track what you watch, and discover cinematic gems tailored directly to your taste.
             </p>
           </div>
-          <p className='relative text-xs text-zinc-500'></p>
+          <p className='relative text-xs text-zinc-500'>© OffScreen Cinema Discovery</p>
         </div>
 
         <div className='flex items-center justify-center p-6 sm:p-8'>
